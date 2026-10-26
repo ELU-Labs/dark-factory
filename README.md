@@ -14,11 +14,12 @@ Read https://raw.githubusercontent.com/ELU-Labs/dark-factory/main/PROMPT.md and 
 
 ## You need
 
-- A web app in a GitHub repository, with a preview deploy for each pull request. The factory builds one if it's missing.
+- A web app in a GitHub repository.
 - Branch protection on the default branch. It's free on public repositories; private ones need a paid GitHub plan.
-- CI that runs off the Bots' computer, such as GitHub Actions.
-- An ELU account. Claim $1,000 of credit at https://elu.dev/grok.
-- An API key for a model outside the Grok family, so the Verifier doesn't share the Builders' blind spots.
+
+The factory signs you in to ELU with one link (new accounts get $1,000 of credit), and builds previews, CI, and progressive deploys if they're missing.
+
+Optional: an API key for a model outside the Grok family, so the Verifier doesn't share the Builders' blind spots.
 
 ## Improve it
 

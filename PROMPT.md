@@ -21,7 +21,7 @@ Each role is its own Bot, or its own session with its own instructions. No role 
 3. **Scenario writer.** Turns each spec into end-to-end user scenarios and creates them in ELU as test agents, so they run against pull requests and production. Writes them from the spec and from real users' failures, never from the code. Builders never see a scenario's steps, only its result and the failure a user would see.
 4. **Builders.** Work in parallel, each in its own worktree, one pull request per candidate. Several candidates may compete for the same spec. The gate picks; among passing candidates, the smallest change wins.
 5. **Twin builder.** Builds a digital twin of every third-party service the journey touches: payments, email, auth, storage, anything external. A twin reproduces the service's API, errors, rate limits, and edge cases, so scenarios run fast, cheaply, and without touching real accounts. Every twin is checked against the real service's documented behavior and kept current with it.
-6. **Verifier.** Runs types, lint, unit tests, property-based tests, and visible scenarios against the twins. Every judgment call, such as code review or spec conformance, goes to a model outside the Grok family through its own API key; ask me for one. Without one, the Verifier runs deterministic checks only and says so.
+6. **Verifier.** Runs types, lint, unit tests, property-based tests, and visible scenarios against the twins. If I give you an API key for a model outside the Grok family, every judgment call, such as code review or spec conformance, goes to that model. Without one, the Verifier runs deterministic checks only and says so.
 7. **Release operator.** Merges when the gate passes, deploys progressively (a small share of real users first, then everyone), promotes or rolls back on ELU's comparison, and rolls back in one step. Database changes are expand-then-contract, so every release can roll back.
 8. **Improver.** Every week, reviews the ledger and ELU's evidence: where tasks stalled, what failed at the gate, what reached users, what each shipped change cost. Changes roles, prompts, routines, and checks through the same pipeline as product code.
 
@@ -53,7 +53,7 @@ Run on events (a pull request opens, a check finishes, a deploy lands, ELU repor
 ## Stop rules
 
 - Stopping beats a forced pass. BLOCKED and NEEDS_HUMAN are valid results.
-- Per task: three attempts, 20 minutes of active work, and a spending ceiling I set. Time spent waiting for ELU, CI, or a deploy does not count. The first limit reached ends the task.
+- Per task: three attempts, 20 minutes of active work, and $5 of model spend, unless I set other limits. Time spent waiting for ELU, CI, or a deploy does not count. The first limit reached ends the task.
 - Conflicting requirements or missing evidence end the task as BLOCKED, never as another attempt.
 - Weakening a test, a scenario, a twin, or the gate to get a candidate through is a failed task, reported as one.
 
@@ -71,17 +71,12 @@ Send these in one message, with the exact step for each. Never ask what you can 
 
 Audit first: the ELU tag, previews, branch protection, CI, deploys, and any earlier agents or bots. Reshape what exists instead of stacking a second factory on top. Ask me before pausing earlier automation that could merge or deploy while you rebuild.
 
-1. If I don't have an ELU account, ask me to claim the $1,000 ELU credit at https://elu.dev/grok.
-2. If ELU isn't receiving sessions from the app, run `npx -y @elu-labs/cli web` from the app's directory. If it needs me to sign in, send me the link. Ship the tag to production through my current release process; it is a tag-only change. Confirm ELU receives a real session.
-3. Ask me to connect the GitHub repository to ELU and turn on pull-request testing in ELU's Settings. Each pull request needs a preview deploy that reports a GitHub deployment status. Build it if it is missing.
-4. Ask me for an ELU API key from ELU → Settings → API & MCP. Add ELU as a remote MCP server in your own configuration:
-   - URL: `https://elu.dev/api/mcp`
-   - Header: `Authorization: Bearer <key>`
-
-   Confirm the connection by listing ELU's tools.
-5. Protect the default branch, with the gate as a required check. If GitHub refuses, tell me what it needs.
-6. Run CI off your computer on every pull request. Build it if it is missing.
-7. Make production deploys progressive, with one-step rollback. Build that if it is missing.
+1. From the app's directory, run `npx -y @elu-labs/cli --yes --offer=grok` and keep it running. It prints a sign-in link and a code. Send me both. I sign in on that page, or create my ELU account there with the $1,000 credit. The command then adds the ELU tag to the app and connects ELU's MCP server to you. If it names a config file, add that server to your MCP configuration. Confirm by listing ELU's tools. If it times out, run it again.
+2. Ship the tag to production through my current release process; it is a tag-only change. Confirm ELU receives a real session.
+3. Check pull-request testing through ELU's MCP server. If GitHub isn't connected to ELU, send me the link ELU gives you. Then turn pull-request testing on through ELU's MCP server. Each pull request needs a preview deploy that creates a GitHub deployment for the pull request's head commit and serves the version page ELU describes. Build it if it is missing.
+4. Protect the default branch, with the gate as a required check. If GitHub refuses, tell me what it needs.
+5. Run CI off your computer on every pull request. Build it if it is missing.
+6. Make production deploys progressive, with one-step rollback. Build that if it is missing.
 
 ## Deliver
 
