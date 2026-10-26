@@ -1,12 +1,12 @@
 # Dark factory
 
-One prompt that builds a dark factory for your repository. Intent goes in, shipped software comes out, and no human writes or reviews the code.
+One prompt that builds and runs a dark factory for your repository. Intent goes in, shipped software comes out, and no human writes or reviews the code.
 
-Grok Bots build: specs, parallel builders, digital twins of your third-party services, verification, and progressive deploys. ELU judges, from outside the Bots' computer: it keeps the hidden scenarios, tests every pull request with its own browser agents, and watches real users after every release.
+Grok Bots run the factory: specs, scenarios, parallel builders, digital twins of your third-party services, verification, merges, progressive deploys, and the factory's own improvement. ELU gives them what they can't get from their own computer: what real users do and where they fail, browser agents that use your app like a real user, a verdict on every pull request, and a real-user comparison on every release.
 
 ## Use it
 
-Open Grok Build or a Grok Bot in your repository and say:
+Give a Grok Bot access to your repository and say:
 
 ```
 Read https://raw.githubusercontent.com/ELU-Labs/dark-factory/main/PROMPT.md and follow it for this repository.
@@ -14,9 +14,11 @@ Read https://raw.githubusercontent.com/ELU-Labs/dark-factory/main/PROMPT.md and 
 
 ## You need
 
-- A web app in a GitHub repository, with a preview deploy for each pull request.
+- A web app in a GitHub repository, with a preview deploy for each pull request. The factory builds one if it's missing.
+- Branch protection on the default branch. It's free on public repositories; private ones need a paid GitHub plan.
+- CI that runs off the Bots' computer, such as GitHub Actions.
 - An ELU account. Claim $1,000 of credit at https://elu.dev/grok.
-- An API key for a model outside the Grok family, so the Verifier doesn't share the Builder's blind spots.
+- An API key for a model outside the Grok family, so the Verifier doesn't share the Builders' blind spots.
 
 ## Improve it
 
