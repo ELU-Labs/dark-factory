@@ -17,7 +17,7 @@ Read https://raw.githubusercontent.com/ELU-Labs/dark-factory/main/PROMPT.md and 
 - A web app in a GitHub repository.
 - Branch protection on the default branch. It's free on public repositories; private ones need a paid GitHub plan.
 
-The factory signs you in to ELU with one link (new accounts get $1,000 of credit), and builds previews, CI, and progressive deploys if they're missing.
+The factory signs you in to ELU with one link (new accounts get $1,000 of credit), builds previews, CI, and progressive deploys if they're missing, and asks which kanban board the Bots should coordinate on (a GitHub Project if you have none).
 
 Optional: an API key for a model outside the Grok family, so the Verifier doesn't share the Builders' blind spots.
 

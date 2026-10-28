@@ -16,14 +16,24 @@ Anything the Bots can do, they do. ELU is for what they can't.
 
 Each role is its own Bot, or its own session with its own instructions. No role grades its own work.
 
-1. **Coordinator.** Owns the queue and the ledger. Assigns work, runs tasks in parallel, enforces budgets and stop rules, and is my single point of contact. Every task has a record in GitHub (an issue or a project item): spec, state, attempts, spend, and links to evidence.
+1. **Coordinator.** Owns the board. Splits work into cards, runs tasks in parallel, enforces budgets and stop rules, and is my single point of contact.
 2. **Analyst.** Turns my goals and ELU's real-user evidence into specs, and keeps the backlog ranked by user impact. Intake also covers production errors, dependency and security updates, flaky checks, and performance regressions. A spec states the user problem, a measurable outcome, acceptance criteria, and the critical invariants (authorization, payments, data integrity). Specs live in the repository. Code is generated from specs, never the other way round.
 3. **Scenario writer.** Turns each spec into end-to-end user scenarios and creates them in ELU as test agents, so they run against pull requests and production. Writes them from the spec and from real users' failures, never from the code. Builders never see a scenario's steps, only its result and the failure a user would see.
 4. **Builders.** Work in parallel, each in its own worktree, one pull request per candidate. Several candidates may compete for the same spec. The gate picks; among passing candidates, the smallest change wins.
 5. **Twin builder.** Builds a digital twin of every third-party service the journey touches: payments, email, auth, storage, anything external. A twin reproduces the service's API, errors, rate limits, and edge cases, so scenarios run fast, cheaply, and without touching real accounts. Every twin is checked against the real service's documented behavior and kept current with it.
 6. **Verifier.** Runs types, lint, unit tests, property-based tests, and visible scenarios against the twins. If I give you an API key for a model outside the Grok family, every judgment call, such as code review or spec conformance, goes to that model. Without one, the Verifier runs deterministic checks only and says so.
 7. **Release operator.** Merges when the gate passes, deploys progressively (a small share of real users first, then everyone), promotes or rolls back on ELU's comparison, and rolls back in one step. Database changes are expand-then-contract, so every release can roll back.
-8. **Improver.** Every week, reviews the ledger and ELU's evidence: where tasks stalled, what failed at the gate, what reached users, what each shipped change cost. Changes roles, prompts, routines, and checks through the same pipeline as product code.
+8. **Improver.** Every week, reviews the board and ELU's evidence: where tasks stalled, what failed at the gate, what reached users, what each shipped change cost. Changes roles, prompts, routines, and checks through the same pipeline as product code.
+
+## The board
+
+The factory runs on one kanban board, so every Bot sees what the others are doing and picks up the next free card.
+
+- One card per task: its spec, owner, state, attempts, spend, and links to evidence. Columns follow the loop: Intake, Scenarios, Build, Verify, Accept, Release, Done, plus Blocked and Needs human.
+- A Bot assigns a card to itself before it starts and moves the card as the work moves. It never works a card another Bot holds; only the Coordinator reassigns.
+- The Coordinator splits each spec into cards that can run in parallel.
+- Scenario steps never go on the board. A scenario's card shows its name and result only, so Builders stay blind.
+- A card in Done is not evidence. ELU's verdict, CI, and GitHub's record are.
 
 ## The loop
 
@@ -35,7 +45,7 @@ Each role is its own Bot, or its own session with its own instructions. No role 
 6. **Release.** Progressive deploy; ELU compares real users; promote or roll back.
 7. **Learn.** Close the ELU issue once users on the new release stop hitting it, and reopen it if they hit it again. Every failure that reached users becomes a new scenario, so it can't ship twice.
 
-Run on events (a pull request opens, a check finishes, a deploy lands, ELU reports a finding) and on schedules (daily intake and a stall sweep, the weekly review). A task with no progress for a day is resumed or ended as BLOCKED.
+Run on events (a pull request opens, a check finishes, a deploy lands, ELU reports a finding) and on schedules (daily intake and a stall sweep, the weekly review). A card with no progress for a day is resumed or moved to Blocked.
 
 ## Pass and fail
 
@@ -69,18 +79,19 @@ Send these in one message, with the exact step for each. Never ask what you can 
 
 ## Set up
 
-Audit first: the ELU tag, previews, branch protection, CI, deploys, and any earlier agents or bots. Reshape what exists instead of stacking a second factory on top. Ask me before pausing earlier automation that could merge or deploy while you rebuild.
+Audit first: the ELU tag, previews, branch protection, CI, deploys, any kanban board already in use, and any earlier agents or bots. Reshape what exists instead of stacking a second factory on top. Ask me before pausing earlier automation that could merge or deploy while you rebuild.
 
-1. From the app's directory, run `npx -y @elu-labs/cli --yes --offer=grok` and keep it running, even if ELU is already connected. It prints a sign-in link, and a code when I can sign in from another device. Send me both. With no code, the link only works in your browser: open it there and let me sign in on your screen. I sign in on that page, or create my ELU account there with the $1,000 credit. The command then adds the ELU tag to the app and connects ELU's MCP server to you with a key that can create test agents. If it names a config file, add that server, with its key, to your MCP configuration and remove any other ELU connection. Confirm by listing ELU's tools. If the synthetic test tool says this credential can only inspect, the connection is read-only: run the command again, and if it is still read-only, report NEEDS_HUMAN with ELU's message. If it times out, run it again.
-2. Ship the tag to production through my current release process; it is a tag-only change. Confirm ELU receives a real session.
-3. Check pull-request testing through ELU's MCP server. If GitHub isn't connected to ELU, send me the link ELU gives you. Then turn pull-request testing on through ELU's MCP server. Each pull request needs a preview deploy that creates a GitHub deployment for the pull request's head commit and serves the version page ELU describes. Build it if it is missing.
-4. Protect the default branch, with the gate as a required check. If GitHub refuses, tell me what it needs.
-5. Run CI off your computer on every pull request. Build it if it is missing.
-6. Make production deploys progressive, with one-step rollback. Build that if it is missing.
+1. Ask me which kanban board the Bots should use: a GitHub Project, Linear, Jira, or another tool I already work in. Suggest any board the audit found. With no preference, create a GitHub Project for this repository. Set it up as The board describes and give every Bot access.
+2. From the app's directory, run `npx -y @elu-labs/cli --yes --offer=grok` and keep it running, even if ELU is already connected. It prints a sign-in link, and a code when I can sign in from another device. Send me both. With no code, the link only works in your browser: open it there and let me sign in on your screen. I sign in on that page, or create my ELU account there with the $1,000 credit. The command then adds the ELU tag to the app and connects ELU's MCP server to you with a key that can create test agents. If it names a config file, add that server, with its key, to your MCP configuration and remove any other ELU connection. Confirm by listing ELU's tools. If the synthetic test tool says this credential can only inspect, the connection is read-only: run the command again, and if it is still read-only, report NEEDS_HUMAN with ELU's message. If it times out, run it again.
+3. Ship the tag to production through my current release process; it is a tag-only change. Confirm ELU receives a real session.
+4. Check pull-request testing through ELU's MCP server. If GitHub isn't connected to ELU, send me the link ELU gives you. Then turn pull-request testing on through ELU's MCP server. Each pull request needs a preview deploy that creates a GitHub deployment for the pull request's head commit and serves the version page ELU describes. Build it if it is missing.
+5. Protect the default branch, with the gate as a required check. If GitHub refuses, tell me what it needs.
+6. Run CI off your computer on every pull request. Build it if it is missing.
+7. Make production deploys progressive, with one-step rollback. Build that if it is missing.
 
 ## Deliver
 
-- The running factory: roles, routines, the ledger, twins, the gate, progressive deploys with rollback, the ELU integration, and a README a new Bot can follow.
+- The running factory: roles, routines, the board, twins, the gate, progressive deploys with rollback, the ELU integration, and a README a new Bot can follow.
 - One spec carried from an ELU finding to production, with ELU's evidence attached and its ELU issue closed.
 - Two sabotage runs. A candidate that passes every visible check but breaks the journey for a user, rejected at the gate. A release that regresses on its first share of users, rolled back.
 - Proof that the stop rules end the loop.
